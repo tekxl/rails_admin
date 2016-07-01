@@ -38,17 +38,23 @@ module RailsAdmin
               @authorization_adapter && @authorization_adapter.attributes_for(:create, @abstract_model).each do |name, value|
                 @object.send("#{name}=", value)
               end
-
-              if @object.save
-                @auditing_adapter && @auditing_adapter.create_object(@object, @abstract_model, _current_user)
-                respond_to do |format|
-                  format.html { redirect_to_on_success }
-                  format.js   { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
+                
+              if RailsAdmin::Config.custom_actions
+                actions_hash = RailsAdmin::Config.custom_actions
+                if actions_hash["#{@object.class.name.downcase}"]
+                    actions_hash["#{@object.class.name.downcase}"].create @object
                 end
               else
-                handle_save_error
+                if @object.save
+                  @auditing_adapter && @auditing_adapter.create_object(@object, @abstract_model, _current_user)
+                  respond_to do |format|
+                    format.html { redirect_to_on_success }
+                    format.js   { render json: {id: @object.id.to_s, label: @model_config.with(object: @object).object_label} }
+                 end
+                 else
+                  handle_save_error
+                end
               end
-
             end
           end
         end

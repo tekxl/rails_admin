@@ -105,6 +105,10 @@ module RailsAdmin
         @authenticate = blk if blk
         @authenticate || DEFAULT_AUTHENTICATION
       end
+        
+      def custom_actions(&blk)
+        blk.call if blk
+      end
 
       # Setup auditing/history/versioning provider that observe objects lifecycle
       def audit_with(*args, &block)
